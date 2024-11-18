@@ -1,3 +1,5 @@
 <?php
-$str_array = 0b11111111;
-var_dump($str_array);
+$s = 1;
+do{
+    echo $s++;
+}while($s < 10);
