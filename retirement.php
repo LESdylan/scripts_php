@@ -6,158 +6,175 @@ class Employee
     private ?int $age;
     private ?int $proStatus;
     private string $arrivalDate;
+    private $holiCollec = [];
 
     public function __construct(array $listEmployees = [], ?string $name = null, ?int $age = null, ?int $proStatus = null, ?string $arrivalDate = null)
     {
-        $this->listEmployees = $listEmployees; // Initialize with existing employees
+        $this->listEmployees = $listEmployees;
         $this->name = $name;
         $this->age = $age;
         $this->proStatus = $proStatus;
-        $this->arrivalDate = $arrivalDate ?? date("Y-m-d H:i:s"); // Default to current datetime
+        $this->arrivalDate = $arrivalDate ?? date("Y-m-d H:i:s");
     }
 
-    // Add new employees to the list
     public function addItems(array $new_array): void
     {
         foreach ($new_array as $employee) {
-            // Ensure the employee is an array with expected keys
             if (is_array($employee) && isset($employee['name'], $employee['age'], $employee['proStatus'], $employee['arrivalDate'])) {
-                // Check for duplicates by name
                 if (!array_key_exists($employee['name'], $this->listEmployees)) {
                     $this->listEmployees[$employee['name']] = [
                         'age' => $employee['age'],
                         'proStatus' => $employee['proStatus'],
                         'arrivalDate' => $employee['arrivalDate']
                     ];
+                } else {
+                    echo "Employee {$employee['name']} already exists.\n";
                 }
             }
         }
     }
 
-    // Get the list of employees
     public function getList(): array
     {
         return $this->listEmployees;
     }
 
-    // Calculate remaining time before retirement
-    public function remainTimeBefRetirement(string $name): void
+    public function remainTimeBefRetirement(string $name): string
     {
         $retirement_age = 64;
 
-        // Check if the employee exists
         if (!isset($this->listEmployees[$name])) {
-            echo "Employee $name does not exist.";
+            return "Employee $name does not exist.";
         }
 
         $age = $this->listEmployees[$name]['age'];
         $remainingYears = $retirement_age - $age;
-        
-        switch (true) { // each becomes a conditional check because switch evaludate the true literal.
-            case ($age == 64):
-                echo "Congrats, you'll get retired this year.";
-                break;
-            case ($age < 60):
-                echo "You still have quite some time before retiring.";
-                break;
-            case ($age > 60 && $age < 64):
-                echo "It shouldn't take long by now.";
-                break;
-            default:
-                echo "You're already retired.";
-        }
 
-        //if ($age < 60) {
-        //    return "It remains $remainingYears years before $name can retire. Enjoy the journey!";
-        //} elseif ($age >= 60 && $age < 64) {
-        //    return "It remains $remainingYears years for $name. Almost there!";
-        //} elseif ($age == 64) {
-        //    return "Congratulations! $name will retire this year!";
-        //} else {
-        //    return "$name is already retired.";
-        //}
+        return match (true) {
+            $age < 60 => "It remains $remainingYears years before $name can retire. Enjoy the journey!",
+            $age >= 60 && $age < 64 => "It remains $remainingYears years for $name. Almost there!",
+            $age == 64 => "Congratulations! $name will retire this year!",
+            default => "$name is already retired."
+        };
     }
 
     public function matchCandRequirements(array $new_candidate): bool
-{
-    // Define the requirements
-    $requirements = [
-        'experience' => 5, // Minimum 5 years of experience
-        'degree' => 'Bachelor', // Must have at least a Bachelor's degree
-        'skills' => ['PHP', 'MySQL'], // Must possess these skills
-    ];
+    {
+        $requirements = [
+            'experience' => 5,
+            'degree' => 'Bachelor',
+            'skills' => ['PHP', 'MySQL']
+        ];
 
-    // Check if the candidate meets the experience requirement
-    if ($new_candidate['experience'] < $requirements['experience']) {
-        return false; // Doesn't meet the experience requirement
+        if ($new_candidate['experience'] < $requirements['experience']) {
+            echo "Missing experience.\n";
+            return false;
+        }
+
+        if ($new_candidate['degree'] !== $requirements['degree']) {
+            echo "Missing required degree.\n";
+            return false;
+        }
+
+        $missingSkills = array_diff($requirements['skills'], $new_candidate['skills']);
+        if (!empty($missingSkills)) {
+            echo "Missing skills: " . implode(', ', $missingSkills) . "\n";
+            return false;
+        }
+
+        return true;
     }
 
-    // Check if the candidate meets the degree requirement
-    if ($new_candidate['degree'] !== $requirements['degree']) {
-        return false; // Doesn't meet the degree requirement
+    public function evaluateCandidate(array $new_candidate): string
+    {
+        $requirements = [
+            'experience' => 5,
+            'degree' => 'Bachelor',
+            'skills' => ['PHP', 'MySQL'],
+            'age' => 30
+        ];
+
+        return match (true) {
+            $new_candidate['experience'] < $requirements['experience'] =>
+                "The candidate lacks experience. Required: {$requirements['experience']} years.",
+            $new_candidate['degree'] !== $requirements['degree'] =>
+                "The candidate's degree does not match. Required: {$requirements['degree']}.",
+            array_diff($requirements['skills'], $new_candidate['skills']) =>
+                "The candidate lacks required skills: " . implode(', ', array_diff($requirements['skills'], $new_candidate['skills'])) . ".",
+            $new_candidate['age'] > $requirements['age'] =>
+                "The candidate exceeds the age limit of {$requirements['age']}.",
+            default =>
+                "The candidate meets all criteria."
+        };
     }
 
-    // Check if the candidate has the required skills
-    $missingSkills = array_diff($requirements['skills'], $new_candidate['skills']);
-    if (!empty($missingSkills)) {
-        return false; // Doesn't have all the required skills
+    public function evaluateExperience(int $experience): string
+    {
+        return match (true) {
+            $experience < 1 => "The candidate is a beginner.",
+            $experience >= 1 && $experience < 3 => "The candidate is junior.",
+            $experience >= 3 && $experience < 5 => "The candidate is intermediate.",
+            $experience >= 5 && $experience < 10 => "The candidate is senior.",
+            default => "The candidate is an expert with vast experience."
+        };
     }
 
-    // If all checks pass, return true
-    return true;
-}
-public function evaluateCandidate(array $new_candidate): string
-{
-    // Définir les critères de sélection
-    $requirements = [
-        'experience' => 5, // Minimum 5 ans d'expérience
-        'degree' => 'Bachelor', // Diplôme requis
-        'skills' => ['PHP', 'MySQL'], // Compétences obligatoires
-        'age' => 30 // Âge maximum
-    ];
+    public function getStatusMessage(int $proStatus): string
+    {
+        return match ($proStatus) {
+            1 => "The employee status is: Intern.",
+            2 => "The employee status is: Employee.",
+            3 => "The employee status is: Manager.",
+            4 => "The employee status is: Director.",
+            default => "Unknown status."
+        };
+    }
+    public function holiCollection(): void
+    {
+        if (is_array($this->holiCollec)) {
+            foreach ($this->holiCollec as $name => $dates) {
+                // Vérifier si les clés 'start_date' et 'end_date' existent
+                if (isset($dates['start_date'], $dates['end_date'])) {
+                    echo PHP_EOL . "Holiday for $name: Start Date - {$dates['start_date']}, End Date - {$dates['end_date']}" . PHP_EOL;
+                } else {
+                    echo "Missing 'start_date' or 'end_date' for holiday '$name'." . PHP_EOL;
+                }
+            }
+        } else {
+            echo '$holiCollec is not an array.' . PHP_EOL;
+        }
+    }
+    
+    public function setHolidays(array $pick): void
+    {
+        function validateDate(string $date, string $format = 'Y-m-d'): bool
+        {
+            $d = DateTime::createFromFormat($format, $date);
+            return $d && $d->format($format) === $date;
+        }
 
-    // Vérifier chaque critère avec une structure switch et des cas spécifiques
-    switch (true) {
-        case ($new_candidate['experience'] < $requirements['experience']):
-            return "Le candidat n'a pas assez d'expérience. Expérience requise: {$requirements['experience']} ans.";
+        $validatedHolidays = [];
 
-        case ($new_candidate['degree'] !== $requirements['degree']):
-            return "Le diplôme du candidat ne correspond pas. Diplôme requis: {$requirements['degree']}.";
+        foreach ($pick as $name => $value) {
+            if (isset($value['start_date'], $value['end_date']) && !empty($name)) {
+                $startDate = $value['start_date'];
+                $endDate = $value['end_date'];
 
-        case (array_diff($requirements['skills'], $new_candidate['skills'])):
-            $missingSkills = implode(', ', array_diff($requirements['skills'], $new_candidate['skills']));
-            return "Le candidat n'a pas les compétences requises: {$missingSkills}.";
+                if (validateDate($startDate, 'Y-m-d') && validateDate($endDate, 'Y-m-d')) {
+                    if (strtotime($startDate) <= strtotime($endDate)) {
+                        $validatedHolidays[$name] = [
+                            'start_date' => $startDate,
+                            'end_date' => $endDate
+                        ];
+                    }
+                }
+            }
+        }
 
-        case ($new_candidate['age'] > $requirements['age']):
-            return "Le candidat dépasse l'âge requis. Âge maximum: {$requirements['age']}.";
-
-        default:
-            return "Le candidat remplit tous les critères.";
+        $this->holiCollec = $validatedHolidays;
     }
 }
-public function evaluateExperience(int $experience): string
-{
-    return match (true) {
-        $experience < 1 => "Le candidat est débutant.\n",
-        $experience >= 1 && $experience < 3 => "Le candidat est junior.\n",
-        $experience >= 3 && $experience < 5 => "Le candidat est intermédiaire.\n",
-        $experience >= 5 && $experience < 10 => "Le candidat est senior.\n",
-        default => "Le candidat est expert avec une vaste expérience.\n",
-    };
-}
 
-public function getStatusMessage(int $proStatus): string
-{
-    return match ($proStatus) {
-        1 => "Le statut de l'employé est : Stagiaire.\n",
-        2 => "Le statut de l'employé est : Employé.\n",
-        3 => "Le statut de l'employé est : Manager.\n",
-        4 => "Le statut de l'employé est : Directeur.\n",
-        default => "Statut inconnu.",
-    };
-}
-
-}
 // Example usage
 
 // Existing employees
@@ -218,3 +235,13 @@ echo $instance->evaluateExperience(6);
 
 $instance = new Employee();
 echo $instance->getStatusMessage(3);
+$holidays = [
+    'John Doe' => ['start_date' => '2024-01-01', 'end_date' => '2024-01-10'],
+    'Jane Smith' => ['start_date' => '2024-02-15', 'end_date' => '2024-02-20'],
+    'Invalid Person' => ['start_date' => '2024-03-01', 'end_date' => '2024-02-28'], // Date invalide
+    'Missing Dates' => ['start_date' => '', 'end_date' => ''], // Dates manquantes
+];
+
+$object = new Employee();
+$object->setHolidays($holidays);
+$object->holiCollection();
