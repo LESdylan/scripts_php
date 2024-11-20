@@ -1,0 +1,2 @@
+[20-Nov-2024 02:06:23 Europe/Berlin] PHP Warning:  file_put_contents(E:\script_php\project\namespace/logs/error.log): Failed to open stream: No such file or directory in E:\script_php\project\namespace\main.php on line 11
+[20-Nov-2024 02:06:34 Europe/Berlin] PHP Warning:  file_put_contents(E:\script_php\project\namespace/logs/error.log): Failed to open stream: No such file or directory in E:\script_php\project\namespace\main.php on line 11
