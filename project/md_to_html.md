@@ -18,6 +18,7 @@ Ce paragraphe contient plusieurs éléments en **Markdown**. Voici quelques exem
 
 - Le texte peut être mis en __gras__ avec des astérisques `**` ou des doubles tirets `__`.
 - Il peut aussi être mis en *italique* avec des astérisques simples `*` ou des underscores `_`.
+fsdf
 - Vous pouvez également utiliser `code` pour formater des morceaux de code.
 
 > "Citation exemple" — Un auteur célèbre
@@ -41,3 +42,53 @@ Voici un tableau :
 ## Conclusion
 
 Le Markdown est un langage de balisage léger utilisé pour formater du texte de manière simple et rapide, et est souvent utilisé dans des fichiers README, des blogs, des forums et des documentations.
+
+`ceci est` `un linè code`
+
+```ceci est ````un linè code`
+```ceci est ````un linè code`
+---dfsf---fds-fdsf chauve-souris
+25?809482--c423
+--- // it's not working if it is stuck from the upper text
+--- hggh
+
+---
+---
+>sdfdsf
+>sdfs>fsdf
+fsdf
+dfsfd
+d>sfsdf
+sdfsd
+dsfs
+
+dfs
+
+[[[dfsfdf]]](sdfd)
+
+---dfsf---fds->fdsf chauve-souris
+25?809482--c423
+--- // it's [not workin(g if it) is st]uck<from the upper text
+--- hggh
+
+---
+---
+>cdfs
+>d[fs]
+5>5(45)
+
+fsd<cdsf
+(dfsfdds)[]
+fsdfsfsfds[[[dfsfdf]]]](sdfd)
+
+-->cdfsd
+->cdfsd
+-fdjkslkjf
+- new list-ghg
+          new line within list
+- new second list
+  - child list
+
+
+
+\[((?:[^\[\]]|\[[^\[\]]*\])*)\]\(([^)]+)\) --> link pattern
