@@ -1,0 +1,1 @@
+The DRY principle aims to avoid code duplication. Design patterns encourage code reuse by encapsulating common behaviors in reusable components. For example, the Factory design pattern allows you to create different objects that conform to a common interface, thereby reducing the duplication of code in creating similar objects.

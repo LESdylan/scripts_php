@@ -1,0 +1,1 @@
+This pattern ensures that there is only one instance of a given class in an application.

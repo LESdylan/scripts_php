@@ -1,0 +1,1 @@
+This pattern provide an interface to create the object of a parent class, which ensure to the sub-classes to modify the objects types that are created.

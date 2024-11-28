@@ -1,0 +1,1 @@
+The KISS principle advocates simplicity and clarity of code. Design patterns promote modularity and organization of code, which makes it easier to understand and maintain. By following design patterns, we avoid complicated solutions and favor simple and efficient structures.
