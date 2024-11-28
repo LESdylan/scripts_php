@@ -5,15 +5,24 @@ namespace App\Src;
 
 function validityArray(array $abstracts, bool $verbose = true): int
 {
+    // Return early if the array is empty
+    if (empty($abstracts)) {
+        if ($verbose) {
+            echo "No abstracts to process." . PHP_EOL;
+        }
+        return 0;
+    }
+
     $validAbstracts = 0;
     $abstractCount = count($abstracts); // Total number of abstracts
     $validAbstractIds = [];
 
     foreach ($abstracts as $abstract) {
-        // Ensure the abstract is an array with required keys
-        if (!is_array($abstract) || !isset($abstract['id'], $abstract['name'], $abstract['url'])) {
+        // Ensure the abstract is an array with required keys and valid types
+        if (!is_array($abstract) || !isset($abstract['id'], $abstract['name'], $abstract['url']) ||
+            (!is_int($abstract['id']) && !is_string($abstract['id'])) || !is_string($abstract['name']) || !is_string($abstract['url'])) {
             if ($verbose) {
-                echo "Skipping an invalid abstract structure." . PHP_EOL;
+                echo "Skipping an invalid abstract structure (missing or incorrect types)." . PHP_EOL;
             }
             continue;
         }

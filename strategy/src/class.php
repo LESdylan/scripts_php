@@ -5,6 +5,15 @@ namespace App\Src;
 
 use Exception;
 
+/**
+ * !vulnerability XSS with `<`; `>`; `&`
+ * *escape all the content users with htmlspecialchars before applying conversion. apply this only with raw text, not within html tags
+ * ! Currently error on logi tables that verify if the footer always exists which is not always the case
+ * * we have to verify if it exists
+ * !Currently the nestes lists are not take in chare which can cause an incorrect HTML.
+ * * Use recursive managemnent or using a parsing markdown more advanced to detect nested list.
+ * !
+ */
 class MarkdownConverter
 {
     private ?string $markdownFile;
@@ -18,87 +27,109 @@ class MarkdownConverter
     }
 
     // Convert headings
-    private function cvt_headings(string $mdText): string
+    private function cvtHeadings(string $mdText): string
     {
-        $mdText = preg_replace('/^#{1} (.*)$/m', '<h1>$1</h1>', $mdText);
-        $mdText = preg_replace('/^#{2} (.*)$/m', '<h2>$1</h2>', $mdText);
-        $mdText = preg_replace('/^#{3} (.*)$/m', '<h3>$1</h3>', $mdText);
-        $mdText = preg_replace('/^#{4} (.*)$/m', '<h4>$1</h4>', $mdText);
-        $mdText = preg_replace('/^#{5} (.*)$/m', '<h5>$1</h5>', $mdText);
-        $mdText = preg_replace('/^#{6} (.*)$/m', '<h6>$1</h6>', $mdText);
+        $mdText = preg_replace('/^#{1} (.*)$/m', '<h1 class="title">$1</h1>', $mdText);
+        $mdText = preg_replace('/^#{2} (.*)$/m', '<h2 class="title">$1</h2>', $mdText);
+        $mdText = preg_replace('/^#{3} (.*)$/m', '<h3 class="title">$1</h3>', $mdText);
+        $mdText = preg_replace('/^#{4} (.*)$/m', '<h4 class="title">$1</h4>', $mdText);
+        $mdText = preg_replace('/^#{5} (.*)$/m', '<h5 class="title">$1</h5>', $mdText);
+        $mdText = preg_replace('/^#{6} (.*)$/m', '<h6 class="title">$1</h6>', $mdText);
         return $mdText;
     }
 
-    // Convert links
-    private function cvt_links(string $mdText): string
+    // Convert links //! duplicate brackets
+    private function cvtLinks(string $mdText): string
     {
         return preg_replace('/\[(.*?)\]\((.*?)\)/', '<a href="$2">$1</a>', $mdText);
     }
 
     // Convert bulleted list
-    private function cvt_bulletedList(string $mdText): string
+    private function cvtBulletedList(string $mdText): string
     {
         $mdText = preg_replace('/^(\*|-) (.*)$/m', '<li>$2</li>', $mdText);
         return preg_replace('/(<li>.*?<\/li>)+/s', '<ul>$0</ul>', $mdText);
     }
 
     // Convert numbered list
-    private function cvt_numberedList(string $mdText): string
+    private function cvtNumberedList(string $mdText): string
     {
         $mdText = preg_replace('/^\d+\. (.*)$/m', '<li>$1</li>', $mdText);
         return preg_replace('/(<li>.*?<\/li>)+/s', '<ol>$0</ol>', $mdText);
     }
 
     // Convert blockquote
-    private function cvt_blockquote(string $mdText): string
+    private function cvtBlockquote(string $mdText): string
     {
         return preg_replace('/^> (.*)$/m', '<blockquote>$1</blockquote>', $mdText);
     }
 
-    // Convert separators (---)
-    private function cvt_separators(string $mdText): string
+    //*[x] Convert separators (---)
+    private function cvtSeparators(string $mdText): string
     {
         return preg_replace('/(?<=\n|^)(-{3,})(?=\n|$)/m', '<hr>', $mdText);
     }
 
     // Convert block code
-    private function cvt_blockCode(string $mdText): string
+    private function cvtBlockCode(string $mdText): string
     {
-        return preg_replace('/```(.*?)```/s', '<pre><code>$1</code></pre>', $mdText);
+        return preg_replace('/`{3}(.*)`{3}/sU', '<pre><code>$1</code></pre>', $mdText);
     }
 
     // Convert inline code
-    private function cvt_lineCode(string $mdText): string
+    private function cvtLineCode(string $mdText): string
     {
         return preg_replace('/`([^`]+)`/', '<code>$1</code>', $mdText);
     }
 
     // Convert images
-    private function cvt_images(string $mdText): string
+    private function cvtImages(string $mdText): string
     {
         return preg_replace('/!\[([^\]]+)\]\(([^)]+)\)/', '<img src="$2" alt="$1">', $mdText);
     }
 
     // Convert tables
-    private function cvt_tables(string $mdText): string
+    private function cvtTables(string $mdText): string
     {
-        // Handle table headers and rows
+        // Handle table headers, rows, and optional footer
         $mdText = preg_replace_callback(
-            '/^\|(.+)\|\n\|(?:-+\|)+\n((?:\|.+\|\n)*)/m',
+            '/^\|([^\n]+)\|\n\|([\-|\s]+)\|\n((?:\|[^\n]+\|\n)+)(?:\|([^\n]+)\|)?$/m',
             function ($matches) {
-                $header = '<tr><th>' . str_replace('|', '</th><th>', trim($matches[1])) . '</th></tr>';
+                // Header processing
+                $header = '<thead><tr><th>' . implode(
+                    '</th><th>',
+                    array_map('htmlspecialchars', explode('|', trim($matches[1], '|')))
+                ) . '</th></tr></thead>';
+    
+                // Body rows processing
                 $rows = array_map(function ($row) {
-                    return '<tr><td>' . str_replace('|', '</td><td>', trim($row)) . '</td></tr>';
-                }, array_filter(explode("\n", trim($matches[2]))));
-                return '<table>' . $header . implode('', $rows) . '</table>';
+                    return '<tr><td>' . implode(
+                        '</td><td>',
+                        array_map('htmlspecialchars', explode('|', trim($row, '|')))
+                    ) . '</td></tr>';
+                }, array_filter(explode("\n", trim($matches[3]))));
+                $body = '<tbody>' . implode('', $rows) . '</tbody>';
+    
+                // Footer processing (if exists)
+                $footer = '';
+                if (!empty($matches[4])) {
+                    $footer = '<tfoot><tr><td>' . implode(
+                        '</td><td>',
+                        array_map('htmlspecialchars', explode('|', trim($matches[4], '|')))
+                    ) . '</td></tr></tfoot>';
+                }
+    
+                // Combine table parts
+                return '<table>' . $header . $body . $footer . '</table>';
             },
             $mdText
         );
         return $mdText;
     }
+    
 
     // Convert bold, italic, strikethrough text
-    private function cvt_BoldStrikeItalic(string $mdText): string
+    private function cvtBoldStrikeItalic(string $mdText): string
     {
         $mdText = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $mdText);
         $mdText = preg_replace('/__(.*?)__/', '<strong>$1</strong>', $mdText);
@@ -112,23 +143,38 @@ class MarkdownConverter
     public function convert(): string
     {
         if ($this->markdownText === null) {
-            throw new Exception('Markdown text is empty.');
+            throw new InvalidArgumentException('Markdown text cannot be null.');
         }
-
+    
         $mdText = $this->markdownText;
-        $mdText = $this->cvt_headings($mdText);
-        $mdText = $this->cvt_BoldStrikeItalic($mdText);
-        $mdText = $this->cvt_links($mdText);
-        $mdText = $this->cvt_bulletedList($mdText);
-        $mdText = $this->cvt_numberedList($mdText);
-        $mdText = $this->cvt_blockquote($mdText);
-        $mdText = $this->cvt_blockCode($mdText);
-        $mdText = $this->cvt_lineCode($mdText);
-        $mdText = $this->cvt_images($mdText);
-        $mdText = $this->cvt_tables($mdText);
-        $mdText = $this->cvt_separators($mdText);
-
-        return $mdText;
+        $mdText = $this->cvtHeadings($mdText);
+        $mdText = $this->cvtBoldStrikeItalic($mdText);
+        $mdText = $this->cvtLinks($mdText);
+        $mdText = $this->cvtBulletedList($mdText);
+        $mdText = $this->cvtNumberedList($mdText);
+        $mdText = $this->cvtBlockquote($mdText);
+        $mdText = $this->cvtBlockCode($mdText);
+        $mdText = $this->cvtLineCode($mdText);
+        $mdText = $this->cvtImages($mdText);
+        $mdText = $this->cvtTables($mdText);
+        $mdText = $this->cvtSeparators($mdText);
+        // Embed converted Markdown into an HTML document
+        $html = <<<HTML
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Converted Markdown</title>
+        <link rel="stylesheet" href="error_log.css">
+    </head>
+    <body>
+        $mdText
+    </body>
+    </html>
+    HTML;
+    
+        return $html;
     }
 
     // Load Markdown from file
