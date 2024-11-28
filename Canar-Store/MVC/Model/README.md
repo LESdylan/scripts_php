@@ -1,0 +1,1 @@
+contains all the raw data of the app and the functions that control and manipulate the datas. it needs to be simples and only gathering functions about CRUD.
