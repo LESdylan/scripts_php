@@ -1,125 +1,103 @@
 <?php
+function markdownTableToHtml($markdown) {
+    $lines = explode("\n", trim($markdown));
+    $html = "<table>\n";
 
-//// Fonction pour traiter les listes non ordonnées avec une hiérarchie correcte
-//function bulletedList($markdown) {
-//    $html = "";
-//    $lines = explode("\n", $markdown);
-//    $stack = [];  // Pile pour gérer les sous-listes imbriquées
-//
-//    foreach ($lines as $line) {
-//        $line = trim($line);
-//        
-//        // Si la ligne commence par un tiret, c'est une liste non ordonnée
-//        if (strpos($line, "-") === 0) {
-//            // Enlever le tiret et les espaces
-//            $item = trim(substr($line, 1));
-//            
-//            // Déterminer le niveau de la liste en fonction de l'indentation
-//            $level = strlen($line) - strlen(ltrim($line));
-//            while (count($stack) > $level) {
-//                $html .= "</ul>\n";
-//                array_pop($stack);
-//            }
-//            
-//            if (count($stack) == $level) {
-//                $html .= "<ul>\n";
-//                array_push($stack, $level);
-//            }
-//
-//            $html .= "  <li>$item</li>\n";
-//        }
-//    }
-//    
-//    // Fermer les balises <ul> restantes
-//    while (count($stack) > 0) {
-//        $html .= "</ul>\n";
-//        array_pop($stack);
-//    }
-//
-//    return $html;
-//}
+    foreach ($lines as $index => $line) {
+        // Enlever les pipes aux extrémités et diviser les cellules
+        $line = trim($line, '|');
+        $cells = array_map('trim', explode('|', $line));
 
-// Fonction pour traiter les listes ordonnées avec une hiérarchie correcte
-function orderedList($markdown) {
-    $html = "";
-    $lines = explode("\n", $markdown);
-    $stack = [];  // Pile pour gérer les sous-listes imbriquées
-    print_r($lines);
-    foreach ($lines as $line) {
-        $line = trim($line);
-        
-        // Si la ligne commence par un numéro, c'est une liste ordonnée
-        if (preg_match("/^\d+\./", $line)) {
-            // Enlever le numéro et le point
-            $item = preg_replace("/^\d+\.\s/", "", $line);
-            
-            // Déterminer le niveau de la liste en fonction de l'indentation
-            $level = strlen($line) - strlen(ltrim($line));
-            while (count($stack) > $level) {
-                $html .= "</ol>\n";
-                array_pop($stack);
+        if ($index == 0) {
+            // Générer le header
+            $html .= "<thead><tr>";
+            foreach ($cells as $cell) {
+                $html .= "<th>" . htmlspecialchars($cell) . "</th>";
             }
-            
-            if (count($stack) == $level) {
-                $html .= "<ol>\n";
-                array_push($stack, $level);
+            $html .= "</tr></thead>\n<tbody>\n";
+        } elseif ($index == count($lines) - 1 && strpos($line, '---') === false) {
+            // Ajouter une section footer si la dernière ligne n'est pas un séparateur
+            $html .= "</tbody>\n<tfoot><tr>";
+            foreach ($cells as $cell) {
+                $html .= "<td>" . htmlspecialchars($cell) . "</td>";
             }
-
-            $html .= "  <li>$item</li>\n";
+            $html .= "</tr></tfoot>\n";
+        } elseif ($index != 1) {
+            // Ajouter les lignes du body (ignorer le séparateur)
+            $html .= "<tr>";
+            foreach ($cells as $cell) {
+                $html .= "<td>" . htmlspecialchars($cell) . "</td>";
+            }
+            $html .= "</tr>\n";
         }
     }
-    
-    // Fermer les balises <ol> restantes
-    while (count($stack) > 0) {
-        $html .= "</ol>\n";
-        array_pop($stack);
-    }
 
+    $html .= "</tbody>\n</table>";
     return $html;
 }
 
-// Texte markdown d'exemple
-$markdown = "
-Liste ordonnée :
-1. Premier élément
-2. Deuxième élément
-3. Troisième élément
+// Exemple de tableau Markdown
+$markdown = <<<MD
+| Nom       | Âge | Ville       |
+|-----------|-----|-------------|
+| Alice     | 25  | Paris       |
+| Bob       | 30  | Marseille   |
+| Charlie   | 35  | Lyon        |
+|-----------|-----|-------------|
+| Footer    | -   | Fin         |
+MD;
 
-Liste non ordonnée :
-- Élément A
-- Élément B
-- Élément C
+// Convertir en HTML
+$tableHtml = markdownTableToHtml($markdown);
 
-Liste ordonnée avec sous-listes :
-1. Premier élément
-  1.1. Sous-élément 1
-  1.2. Sous-élément 2
-2. Deuxième élément
-  2.1. Sous-élément 1
-    2.1.1 Sous-élément 2
+// Générer un fichier index.html
+$htmlTemplate = <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Markdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        thead {
+            background-color: #f4f4f4;
+        }
+        tfoot {
+            background-color: #f4f4f4;
+            font-style: italic;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tableau Converti de Markdown</h1>
+    {$tableHtml}
+</body>
+</html>
+HTML;
 
-Liste non ordonnée avec sous-listes :
-- Élément A
-  - Sous-élément A.1
-  - Sous-élément A.2
-- Élément B
-  - Sous-élément B.1
-  - Sous-élément B.2
-    - Sous-élément C.3
-        - Sous-élément D.4
-";
+// Écrire le fichier HTML
+file_put_contents('index.html', $htmlTemplate);
 
-// Générer le code HTML pour les listes ordonnées et non ordonnées
-$html_content = "<html>\n<head>\n<title>Markdown to HTML</title>\n</head>\n<body>\n";
-
-// Ajouter les listes converties en HTML
-$html_content .= "<h2>Liste Ordonnée:</h2>\n" . orderedList($markdown);
-//$html_content .= "<h2>Liste Non Ordonnée:</h2>\n" . bulletedList($markdown);
-
-$html_content .= "</body>\n</html>";
-
-// Enregistrer le contenu HTML dans un fichier index.html
-file_put_contents("index.html", $html_content);
-
-echo "Fichier index.html créé avec succès!";
+echo "Le fichier index.html a été généré avec succès !";
 ?>

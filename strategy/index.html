@@ -1,35 +1,52 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Markdown to HTML</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Markdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        thead {
+            background-color: #f4f4f4;
+        }
+        tfoot {
+            background-color: #f4f4f4;
+            font-style: italic;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
 </head>
 <body>
-<h2>Liste Ordonnée:</h2>
-<ol>
-  <li>Premier élément</li>
-</ol>
-<ol>
-  <li>Deuxième élément</li>
-</ol>
-<ol>
-  <li>Troisième élément</li>
-</ol>
-<ol>
-  <li>Premier élément</li>
-</ol>
-<ol>
-  <li>1.1. Sous-élément 1</li>
-</ol>
-<ol>
-  <li>1.2. Sous-élément 2</li>
-</ol>
-<ol>
-  <li>Deuxième élément</li>
-</ol>
-<ol>
-  <li>2.1. Sous-élément 1</li>
-</ol>
-<ol>
-  <li>2.1.1 Sous-élément 2</li>
-</ol>
+    <h1>Tableau Converti de Markdown</h1>
+    <table>
+<thead><tr><th>Nom</th><th>Âge</th><th>Ville</th><th></th></tr></thead>
+<tbody>
+<tr><td>Alice</td><td>25</td><td>Paris</td><td></td></tr>
+<tr><td>Bob</td><td>30</td><td>Marseille</td><td></td></tr>
+<tr><td>Charlie</td><td>35</td><td>Lyon</td><td></td></tr>
+<tr><td>-----------</td><td>-----</td><td>-------------</td><td></td></tr>
+</tbody>
+<tfoot><tr><td>Footer</td><td>-</td><td>Fin</td></tr></tfoot>
+</tbody>
+</table>
 </body>
 </html>
